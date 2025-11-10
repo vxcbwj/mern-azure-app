@@ -10,7 +10,7 @@ function App() {
     try {
       // In production, it will be relative path. In development, we need full URL
       const apiUrl = import.meta.env.PROD
-        ? "/api/items"
+        ? "https://mern-azure-app.onrender.com/api/items"
         : "http://localhost:5000/api/items";
       const response = await fetch(apiUrl);
       const data = await response.json();
