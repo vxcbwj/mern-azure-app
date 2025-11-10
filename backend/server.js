@@ -6,24 +6,33 @@ require("dotenv").config();
 
 const app = express();
 
-// Middleware
+// CORS for Netlify frontend
 app.use(
   cors({
-    origin: ["http://localhost:5173", "https://your-app-name.netlify.app"],
+    origin: ["http://localhost:5173", "https://soft-panda-d5d69f.netlify.app"],
     credentials: true,
   })
 );
+
+// Middleware
 app.use(express.json());
 
-// MongoDB Connection
+// MongoDB Connection - FIXED: Remove quotes from env variable
+const MONGODB_URI = process.env.MONGODB_URI;
 
-const MONGODB_URI =
-  process.env.MONGODB_URI || "mongodb://localhost:27017/merndb";
+if (!MONGODB_URI) {
+  console.error("MONGODB_URI environment variable is required");
+  process.exit(1);
+}
 
 mongoose
   .connect(MONGODB_URI)
   .then(() => console.log("MongoDB Connected"))
-  .catch((err) => console.log("MongoDB connection error:", err));
+  .catch((err) => {
+    console.log("MongoDB connection error:", err.message);
+    process.exit(1);
+  });
+
 // Simple Test Model
 const ItemSchema = new mongoose.Schema({
   name: String,
@@ -52,16 +61,17 @@ app.post("/api/items", async (req, res) => {
   }
 });
 
-// Serve React in production
-if (process.env.NODE_ENV === "production") {
-  app.use(express.static(path.join(__dirname, "../client/build")));
-
-  app.get("*", (req, res) => {
-    res.sendFile(path.join(__dirname, "../client/build", "index.html"));
+// Health check route
+app.get("/api/health", (req, res) => {
+  res.json({
+    status: "OK",
+    database:
+      mongoose.connection.readyState === 1 ? "Connected" : "Disconnected",
+    timestamp: new Date().toISOString(),
   });
-}
+});
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
