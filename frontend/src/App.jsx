@@ -7,7 +7,6 @@ function App() {
 
   // ABSOLUTE URL - This is crucial!
   const BACKEND_URL = "https://mern-azure-app.onrender.com";
-
   // Fetch items from backend
   const fetchItems = async () => {
     try {
