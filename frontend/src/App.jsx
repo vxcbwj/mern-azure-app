@@ -5,34 +5,41 @@ function App() {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
 
-  // Your actual backend URL - IMPORTANT!
+  // ABSOLUTE URL - This is crucial!
   const BACKEND_URL = "https://mern-azure-app.onrender.com";
 
   // Fetch items from backend
   const fetchItems = async () => {
     try {
-      console.log("Fetching items from backend...");
+      console.log("Fetching from:", `${BACKEND_URL}/api/items`);
       const response = await fetch(`${BACKEND_URL}/api/items`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
       const data = await response.json();
       console.log("Items received:", data);
       setItems(data);
     } catch (error) {
       console.error("Error fetching items:", error);
-      alert("Error connecting to backend: " + error.message);
     }
   };
 
   // Add new item
   const addItem = async (e) => {
     e.preventDefault();
+    if (!name.trim() || !description.trim()) return;
+
     try {
-      console.log("Adding item:", { name, description });
+      console.log("Adding to:", `${BACKEND_URL}/api/items`);
       const response = await fetch(`${BACKEND_URL}/api/items`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ name, description }),
+        body: JSON.stringify({
+          name: name.trim(),
+          description: description.trim(),
+        }),
       });
 
       if (!response.ok) {
@@ -40,19 +47,17 @@ function App() {
       }
 
       const newItem = await response.json();
-      console.log("Item added successfully:", newItem);
+      console.log("Item added:", newItem);
 
-      // Clear form and refresh list
+      // Clear form and refresh
       setName("");
       setDescription("");
       fetchItems();
     } catch (error) {
       console.error("Error adding item:", error);
-      alert("Error adding item: " + error.message);
     }
   };
 
-  // Load items when component mounts
   useEffect(() => {
     fetchItems();
   }, []);
@@ -60,34 +65,51 @@ function App() {
   return (
     <div style={{ textAlign: "center", padding: "50px", fontFamily: "Arial" }}>
       <h1>MERN App - Fully Working 🚀</h1>
-      <p>Backend: {BACKEND_URL}</p>
+      <p>
+        <strong>Backend:</strong> {BACKEND_URL}
+      </p>
 
-      <form onSubmit={addItem} style={{ marginBottom: "20px" }}>
-        <input
-          type="text"
-          placeholder="Item Name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          required
-          style={{ margin: "5px", padding: "8px", width: "200px" }}
-        />
-        <input
-          type="text"
-          placeholder="Description"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          required
-          style={{ margin: "5px", padding: "8px", width: "200px" }}
-        />
+      <form onSubmit={addItem} style={{ marginBottom: "30px" }}>
+        <div>
+          <input
+            type="text"
+            placeholder="Item Name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+            style={{
+              margin: "5px",
+              padding: "10px",
+              width: "200px",
+              fontSize: "16px",
+            }}
+          />
+        </div>
+        <div>
+          <input
+            type="text"
+            placeholder="Description"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            required
+            style={{
+              margin: "5px",
+              padding: "10px",
+              width: "200px",
+              fontSize: "16px",
+            }}
+          />
+        </div>
         <button
           type="submit"
           style={{
-            margin: "5px",
-            padding: "8px 16px",
-            backgroundColor: "#007bff",
+            margin: "10px",
+            padding: "10px 20px",
+            backgroundColor: "#28a745",
             color: "white",
             border: "none",
-            borderRadius: "4px",
+            borderRadius: "5px",
+            fontSize: "16px",
             cursor: "pointer",
           }}
         >
@@ -98,7 +120,7 @@ function App() {
       <div>
         <h2>Items List ({items.length} items)</h2>
         {items.length === 0 ? (
-          <p>No items yet. Add one above!</p>
+          <p>No items yet. Add your first item above! ✅</p>
         ) : (
           <ul
             style={{
@@ -112,14 +134,16 @@ function App() {
               <li
                 key={item._id}
                 style={{
-                  padding: "10px",
-                  margin: "5px",
-                  backgroundColor: "#f0f0f0",
-                  borderRadius: "4px",
-                  border: "1px solid #ddd",
+                  padding: "15px",
+                  margin: "10px",
+                  backgroundColor: "#e9ecef",
+                  borderRadius: "8px",
+                  border: "2px solid #007bff",
+                  textAlign: "left",
                 }}
               >
-                <strong>{item.name}</strong>: {item.description}
+                <strong style={{ color: "#007bff" }}>{item.name}</strong>:{" "}
+                {item.description}
               </li>
             ))}
           </ul>
